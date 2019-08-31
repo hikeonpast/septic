@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import time
 from datetime import datetime
 import board
@@ -12,6 +13,10 @@ import adafruit_mprls
 #PGSQL
 import psycopg2
 
+#rolling average
+from collections import deque
+
+#init stuff starts here
 # I2C setup
 i2c = busio.I2C(board.SCL, board.SDA)
 bmp = adafruit_bmp3xx.BMP3XX_I2C(i2c)
@@ -24,6 +29,10 @@ bmp.temperature_oversampling = 2
 # PGSQL connect
 conn = psycopg2.connect('dbname=test')
 cur = conn.cursor()
+
+#mess with moving average here
+
+
 
 def signal_handler(sig, frame):
 	print('You pressed Ctrl+C!')
@@ -54,10 +63,10 @@ def add_record(press, temp, abs):
 
 while True:
 	port = (mpr.pressure - bmp.pressure + 2) / 68.9476
-	#print("Abs Pressure (amb): {:6.1f} Abs Pressure (port): {:6.1f}  Temperature: {:5.2f}".format(bmp.pressure, mpr.pressure, bmp.temperature))
 	print("Port pressure (PSI): {:1.3f} Temperature: {:5.2f}".format(port, bmp.temperature))
 
 	add_record(port, bmp.temperature, bmp.pressure)
 	conn.commit()
+
 	time.sleep(60)
 
