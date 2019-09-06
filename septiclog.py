@@ -34,9 +34,6 @@ cur = conn.cursor()
 #static vars for Hue control; URL includes username and ID of target light
 hue_hub_url = "http://192.168.1.84/api/XYNHOn3SOzXzZbhLpKBV2xlA5d9G9CeMcKQbt9oh/lights/26/state"
 
-#turn light on
-r = requests.put(hue_hub_url, json.dumps({"on":True, "sat":230, "bri":200, "hue":0}), timeout=5)
-
 def signal_handler(sig, frame):
 	print('Graceful Exit')
 
@@ -104,7 +101,8 @@ def update_hue(press, temp):
 	index = len(hue_color) - round(len(hue_color) * ((port - input_min) / (input_max - input_min)))
 
 	#write update
-	hue_payload = {"hue": hue_color[index], "bri": brightness}
+	hue_payload = {"on":True, "sat":230, "hue": hue_color[index], "bri": brightness}
+	print(hue_payload)
 	r = requests.put(hue_hub_url, json.dumps(hue_payload), timeout=5)
 	
 	#debugging is fun
