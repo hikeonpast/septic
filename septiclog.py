@@ -73,7 +73,9 @@ def update_hue(press, temp):
 	#static vars
 	input_max = 3.7
 	input_min = 2.5
-	hue_color = [0, 500, 1000, 2000, 3000, 4000, 5000, 7000, 8000, 9000, 10000, 12500, 15000, 16000, 17000, 18000, 19000, 20000, 21845]
+	hue_color_min = 0
+	hue_color_max = 21845
+	#hue_color = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 15000, 16000, 17000, 17500, 18000, 18500, 19000, 19500, 20000, 20500, 21000, 21845]
 	bright_max = 255
 	bright_min = 100
 	
@@ -81,7 +83,6 @@ def update_hue(press, temp):
 	dt = datetime.now()
 	hour = dt.hour
 	minute = dt.minute
-	#print("Current hour is {}".format(hour))
 	if hour in range(6,20):
 		if hour == 6:
 			brightness = int(bright_min + (((minute + 1) / 60) * (bright_max - bright_min)))
@@ -97,15 +98,15 @@ def update_hue(press, temp):
 			brightness = bright_min
 			#print("Night time")
 
-	#convert current pressure to hue using index
-	index = len(hue_color) - round(len(hue_color) * ((port - input_min) / (input_max - input_min)))
+	#convert current pressure to hue color
+	hue_color = hue_color_max - round((hue_color_max - hue_color_min) * ((port - input_min) / (input_max - input_min)))
 
 	#write update
-	hue_payload = {"on":True, "sat":230, "hue": hue_color[index], "bri": brightness}
+	hue_payload = {"on":True, "sat":230, "hue": hue_color, "bri": brightness}
 	r = requests.put(hue_hub_url, json.dumps(hue_payload), timeout=5)
 	
 	#debugging is fun
-	print("Port pressure (PSI): {:1.3f} Temperature: {:5.2f} Array Index {}/{} Brightness {:2.1f}%".format(press, temp, index, len(hue_color), brightness*100/255))
+	print("Port pressure (PSI): {:1.3f} Temperature: {:5.2f} Hue Color {} Brightness {:2.1f}%".format(press, temp, hue_color, brightness*100/255))
 
 
 while True:
