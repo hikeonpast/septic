@@ -87,14 +87,14 @@ def update_hue(press, temp):
 	#print("Current hour is {}".format(hour))
 	if hour in range(6,20):
 		if hour == 6:
-			brightness = bright_min + ((minute + 1 / 60) * (bright_max - bright_min))
+			brightness = int(bright_min + (((minute + 1) / 60) * (bright_max - bright_min)))
 			print("Brightening.  Brightness: {}  Hour: {}  Min: {}".format(brightness, hour, minute))
 		else:
 			brightness = bright_max
 			#print("Daytime")
 	else:
 		if hour == 20:
-			brightness = bright_max - ((minute + 1 / 60) * (bright_max - bright_min))
+			brightness = int(bright_max - (((minute + 1) / 60) * (bright_max - bright_min)))
 			print("Dimming.  Brightness: {}  Hour: {}  Min: {}".format(brightness, hour, minute))
 		else: 
 			brightness = bright_min
