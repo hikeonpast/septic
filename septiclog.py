@@ -102,7 +102,6 @@ def update_hue(press, temp):
 
 	#write update
 	hue_payload = {"on":True, "sat":230, "hue": hue_color[index], "bri": brightness}
-	print(hue_payload)
 	r = requests.put(hue_hub_url, json.dumps(hue_payload), timeout=5)
 	
 	#debugging is fun
