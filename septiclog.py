@@ -33,17 +33,12 @@ cur = conn.cursor()
 
 #static vars for Hue control; URL includes username and ID of target light
 hue_hub_url = "http://192.168.1.84/api/XYNHOn3SOzXzZbhLpKBV2xlA5d9G9CeMcKQbt9oh/lights/26/state"
-hue_color = [0, 1250, 2500, 3750, 5000, 8378, 10000, 12500, 15000, 18000, 20000, 21845]
 
 #turn light on
-r = requests.put(hue_hub_url, json.dumps({"on":True, "sat":200, "bri":200, "hue":0}), timeout=5)
-
-#mock pressure stats and input here
-input_max = 3.8
-input_min = 2.5
+r = requests.put(hue_hub_url, json.dumps({"on":True, "sat":230, "bri":200, "hue":0}), timeout=5)
 
 def signal_handler(sig, frame):
-	print('You pressed Ctrl+C!')
+	print('Graceful Exit')
 
 	# Make the changes to the database persistent
 	conn.commit()
@@ -58,6 +53,7 @@ def signal_handler(sig, frame):
 	sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 
+#write a database record
 def add_record(press, temp, abs):
 
 	#current time
@@ -71,6 +67,28 @@ def add_record(press, temp, abs):
 	"""
 	values = (dt, press, temp, abs)
 	cur.execute(query, values)
+	conn.commit()
+
+
+#write update to Hue 
+def update_hue(press, temp):
+
+	#static vars
+	input_max = 3.7
+	input_min = 2.5
+	hue_color = [0, 500, 1000, 2000, 3000, 4000, 5000, 7000, 8000, 9000, 10000, 12500, 15000, 16000, 17000, 18000, 19000, 20000, 21845]
+	
+	#get current time and convert to brightness
+	
+	#convert current pressure to hue using index
+	index = len(hue_color) - round(len(hue_color) * ((port - input_min) / (input_max - input_min)))
+
+	#write update
+	color_payload = {"hue": hue_color[index]}
+	r = requests.put(hue_hub_url, json.dumps(color_payload), timeout=5)
+	
+	#debugging is fun
+	print("Port pressure (PSI): {:1.3f} Temperature: {:5.2f} Array Index {}/{}".format(press, temp, index, len(hue_color)))
 
 
 while True:
@@ -78,15 +96,10 @@ while True:
 
 	#save to Postgres
 	add_record(port, bmp.temperature, bmp.pressure)
-	conn.commit()
 
-	#map input float to best fit in the list of hues
-	index = len(hue_color) - round(len(hue_color) * ((port - input_min) / (input_max - input_min)))
-	print("Port pressure (PSI): {:1.3f} Temperature: {:5.2f} Array Index {}".format(port, bmp.temperature, index))
+	#update hue color and brightness
+	update_hue(port, bmp.temperature)
 
-	#change color
-	color_payload = {"hue": hue_color[index]}
-	r = requests.put(hue_hub_url, json.dumps(color_payload), timeout=5)
-
+	#TODO replace with time-based mechanism so that application restarts don't write multiple records per timeslice
 	time.sleep(60)
 
