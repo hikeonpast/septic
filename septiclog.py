@@ -77,21 +77,42 @@ def update_hue(press, temp):
 	input_max = 3.7
 	input_min = 2.5
 	hue_color = [0, 500, 1000, 2000, 3000, 4000, 5000, 7000, 8000, 9000, 10000, 12500, 15000, 16000, 17000, 18000, 19000, 20000, 21845]
+	bright_max = 255
+	bright_min = 100
 	
 	#get current time and convert to brightness
-	
+	dt = datetime.now()
+	hour = dt.hour
+	minute = dt.minute
+	#print("Current hour is {}".format(hour))
+	if hour in range(6,20):
+		if hour == 6:
+			brightness = bright_min + ((minute + 1 / 60) * (bright_max - bright_min))
+			print("Brightening.  Brightness: {}  Hour: {}  Min: {}".format(brightness, hour, minute))
+		else:
+			brightness = bright_max
+			#print("Daytime")
+	else:
+		if hour == 20:
+			brightness = bright_max - ((minute + 1 / 60) * (bright_max - bright_min))
+			print("Dimming.  Brightness: {}  Hour: {}  Min: {}".format(brightness, hour, minute))
+		else: 
+			brightness = bright_min
+			#print("Night time")
+
 	#convert current pressure to hue using index
 	index = len(hue_color) - round(len(hue_color) * ((port - input_min) / (input_max - input_min)))
 
 	#write update
-	color_payload = {"hue": hue_color[index]}
-	r = requests.put(hue_hub_url, json.dumps(color_payload), timeout=5)
+	hue_payload = {"hue": hue_color[index], "bri": brightness}
+	r = requests.put(hue_hub_url, json.dumps(hue_payload), timeout=5)
 	
 	#debugging is fun
-	print("Port pressure (PSI): {:1.3f} Temperature: {:5.2f} Array Index {}/{}".format(press, temp, index, len(hue_color)))
+	print("Port pressure (PSI): {:1.3f} Temperature: {:5.2f} Array Index {}/{} Brightness {:2.1f}%".format(press, temp, index, len(hue_color), brightness*100/255))
 
 
 while True:
+	#read update from both pressure sensors and compute psi on input port
 	port = (mpr.pressure - bmp.pressure + 2) / 68.9476
 
 	#save to Postgres
