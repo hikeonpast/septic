@@ -18,7 +18,7 @@ import requests
 import json
 
 #compensation for pulled up hose
-hose_offset = 0.0
+hose_offset = 12.0
 press_offset = hose_offset * 0.0360912
 
 #init stuff starts here
