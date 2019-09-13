@@ -17,10 +17,6 @@ import psycopg2
 import requests
 import json
 
-#compensation for pulled up hose
-hose_offset = 12.0
-press_offset = hose_offset * 0.0360912
-
 #init stuff starts here
 # I2C setup
 i2c = busio.I2C(board.SCL, board.SDA)
@@ -70,6 +66,19 @@ def add_record(press, temp, abs):
 	cur.execute(query, values)
 	conn.commit()
 
+
+#read hose offset from config table
+def get_pressure_offset():
+
+	query = "select value from config where key = 'hose_offset';"
+	cur.execute(query)
+	result = cur.fetchone()
+	offset_inches = float(result[0])
+	if (offset_inches > 0.0) and (offset_inches < 48.0):
+		offset_psi = offset_inches * 0.0360912
+	else:
+		offset_psi = 0
+	return(offset_psi)
 
 #write update to Hue 
 def update_hue(press, temp):
@@ -124,8 +133,8 @@ while True:
 	#read update from both pressure sensors and compute psi on input port
 	port = (mpr.pressure - bmp.pressure + 2) / 68.9476
 
-	#offset
-	port += press_offset
+	#read offset from database
+	port += get_pressure_offset();
 
 	#save to Postgres
 	add_record(port, bmp.temperature, bmp.pressure)
