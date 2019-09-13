@@ -17,6 +17,10 @@ import psycopg2
 import requests
 import json
 
+#compensation for pulled up hose
+hose_offset = 0.0
+press_offset = hose_offset * 0.0360912
+
 #init stuff starts here
 # I2C setup
 i2c = busio.I2C(board.SCL, board.SDA)
@@ -121,7 +125,7 @@ while True:
 	port = (mpr.pressure - bmp.pressure + 2) / 68.9476
 
 	#offset
-	port += 1.0
+	port += press_offset
 
 	#save to Postgres
 	add_record(port, bmp.temperature, bmp.pressure)
