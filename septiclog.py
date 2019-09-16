@@ -37,18 +37,23 @@ hue_hub_url = "http://192.168.1.84/api/XYNHOn3SOzXzZbhLpKBV2xlA5d9G9CeMcKQbt9oh/
 def signal_handler(sig, frame):
 	print('Graceful Exit')
 
-	# Make the changes to the database persistent
-	conn.commit()
-
-	# Close communication with the database
-	cur.close()
-	conn.close()
-
-	#turn off Hue on exit
-	r = requests.put(hue_hub_url, json.dumps({"on":False}), timeout=5)
+	#commit database writes and turn off hue light
+	shutdown()
 
 	sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
+
+def shutdown():
+	# Make the changes to the database persistent
+        conn.commit()
+
+        # Close communication with the database
+        cur.close()
+        conn.close()
+
+        #turn off Hue on exit
+        r = requests.put(hue_hub_url, json.dumps({"on":False}), timeout=5)
+
 
 #write a database record
 def add_record(press, temp, abs):
@@ -84,11 +89,10 @@ def get_pressure_offset():
 def update_hue(press, temp):
 
 	#static vars
-	input_max = 3.7
+	input_max = 3.8
 	input_min = 2.5
 	hue_color_min = 0
 	hue_color_max = 21845
-	#hue_color = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 15000, 16000, 17000, 17500, 18000, 18500, 19000, 19500, 20000, 20500, 21000, 21845]
 	bright_max = 255
 	bright_min = 75
 
@@ -123,7 +127,11 @@ def update_hue(press, temp):
 
 	#write update
 	hue_payload = {"on":True, "sat":255, "hue": hue_color, "bri": brightness}
-	r = requests.put(hue_hub_url, json.dumps(hue_payload), timeout=5)
+
+	try:
+		r = requests.put(hue_hub_url, json.dumps(hue_payload), timeout=5)
+	except: 
+		print ("HTTP error; retrying")
 	
 	#debugging is fun
 	print("Port pressure (PSI): {:1.3f} Temperature: {:5.2f} Hue Color {} Brightness {:2.1f}%".format(orig_press, temp, hue_color, brightness*100/255))
@@ -136,11 +144,11 @@ while True:
 	#read offset from database
 	port += get_pressure_offset();
 
-	#save to Postgres
-	add_record(port, bmp.temperature, bmp.pressure)
-
 	#update hue color and brightness
 	update_hue(port, bmp.temperature)
+
+	#save to Postgres
+	add_record(port, bmp.temperature, bmp.pressure)
 
 	#TODO replace with time-based mechanism so that application restarts don't write multiple records per timeslice
 	time.sleep(60)
