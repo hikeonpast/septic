@@ -141,11 +141,12 @@ def update_hue(press, temp):
 
 while True:
 	#read update from both pressure sensors and compute psi on input port
-	raw_press=0
-	for x in range(1,11):
+	raw_press=0.0
+	loops=60  #can't be more than 60
+	for x in range(1,loops+1):
 		raw_press += (mpr.pressure - bmp.pressure + 2) 
 		time.sleep(1)
-	raw_press = raw_press/10
+	raw_press = raw_press/loops
 
 	port = raw_press / 68.9476
 
@@ -159,5 +160,5 @@ while True:
 	add_record(port, bmp.temperature, bmp.pressure)
 
 	#TODO replace with time-based mechanism so that application restarts don't write multiple records per timeslice
-	time.sleep(50)
+	time.sleep(60-loops)
 
