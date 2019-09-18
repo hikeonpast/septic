@@ -134,7 +134,7 @@ def update_hue(press, temp):
 		print ("HTTP error; retrying")
 	
 	#debugging is fun
-	print("Port pressure (PSI): {:1.3f} Temperature: {:5.2f} Hue Color {} Brightness {:2.1f}%".format(orig_press, temp, hue_color, brightness*100/255))
+	print("{} Adj pres (PSI): {:1.3f} Temp: {:5.2f} Hue Color {} Brightness {:2.1f}%".format(dt.strftime("%x %H:%M"), orig_press, temp, hue_color, brightness*100/255))
 
 
 while True:
