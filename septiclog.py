@@ -145,7 +145,6 @@ while True:
 	for x in range(1,11):
 		raw_press += (mpr.pressure - bmp.pressure + 2) 
 		time.sleep(1)
-		print(raw_press/x)
 	raw_press = raw_press/10
 
 	port = raw_press / 68.9476
