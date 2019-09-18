@@ -134,7 +134,7 @@ def update_hue(press, temp):
 		print ("HTTP error; retrying")
 	
 	#debugging is fun
-	print("{} - Press(adj):{:1.3f} Temp:{:5.2f} Color:{:5.0f} Brightness:{:2.1f}%".format(dt.strftime("%x %H:%M"), orig_press, temp, hue_color, brightness*100/255))
+	print("{} - Press(adj):{:1.2f} Temp:{:5.2f} Color:{:5.0f} Brightness:{:2.1f}%".format(dt.strftime("%x %H:%M"), orig_press, temp, hue_color, brightness*100/255))
 
 
 while True:
