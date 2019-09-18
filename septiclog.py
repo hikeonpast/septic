@@ -137,9 +137,18 @@ def update_hue(press, temp):
 	print("{} - Press(adj):{:1.2f} Temp:{:5.2f} Color:{:5.0f} Brightness:{:2.1f}%".format(dt.strftime("%x %H:%M"), orig_press, temp, hue_color, brightness*100/255))
 
 
+
+
 while True:
 	#read update from both pressure sensors and compute psi on input port
-	port = (mpr.pressure - bmp.pressure + 2) / 68.9476
+	raw_press=0
+	for x in range(1,11):
+		raw_press += (mpr.pressure - bmp.pressure + 2) 
+		time.sleep(1)
+		print(raw_press/x)
+	raw_press = raw_press/10
+
+	port = raw_press / 68.9476
 
 	#read offset from database
 	port += get_pressure_offset();
@@ -151,5 +160,5 @@ while True:
 	add_record(port, bmp.temperature, bmp.pressure)
 
 	#TODO replace with time-based mechanism so that application restarts don't write multiple records per timeslice
-	time.sleep(60)
+	time.sleep(50)
 
