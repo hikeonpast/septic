@@ -134,7 +134,7 @@ def update_hue(press, temp):
 		print ("HTTP error; retrying")
 	
 	#debugging is fun
-	print("{} - Press(adj):{:1.2f} Temp:{:5.2f} Color:{:5.0f} Brightness:{:2.1f}%".format(dt.strftime("%x %H:%M"), orig_press, temp, hue_color, brightness*100/255))
+	print("{} - Press(adj):{:1.3f} Temp:{:5.2f} Color:{:5.0f} Brightness:{:2.1f}%".format(dt.strftime("%x %H:%M:%S"), orig_press, temp, hue_color, brightness*100/255))
 
 
 
@@ -142,11 +142,13 @@ def update_hue(press, temp):
 while True:
 	#read update from both pressure sensors and compute psi on input port
 	raw_press=0.0
-	loops=60  #can't be more than 60
+	loops=58  #can't be more than 60
 	for x in range(1,loops+1):
 		raw_press += (mpr.pressure - bmp.pressure + 2) 
 		time.sleep(1)
 	raw_press = raw_press/loops
+
+	#convert to PSI	
 
 	port = raw_press / 68.9476
 
@@ -160,5 +162,6 @@ while True:
 	add_record(port, bmp.temperature, bmp.pressure)
 
 	#TODO replace with time-based mechanism so that application restarts don't write multiple records per timeslice
-	time.sleep(60-loops)
+	#takes a couple of seconds to do database writes
+	time.sleep(60-loops-2)
 
