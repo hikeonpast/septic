@@ -65,9 +65,9 @@ def add_record(press, temp, abs):
 	INSERT INTO
 		stability (time, pressure, temperature, abs_press)
 	VALUES 
-		(%s, %s, %s, %s);
+		(now(), %s, %s, %s);
 	"""
-	values = (dt, press, temp, abs)
+	values = (press, temp, abs)
 	cur.execute(query, values)
 	conn.commit()
 
