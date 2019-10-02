@@ -33,7 +33,7 @@ def read_recent(conn, cur):
 	#basic stats on list
 	mean = statistics.mean(result_list)
 	stdev = statistics.pstdev(result_list)
-	print("Mean:", mean)
+	print("Pressure Mean:{:1.3f} PSI".format(mean))
 
 	#lists for above, below threshold
 	increase_list = []
