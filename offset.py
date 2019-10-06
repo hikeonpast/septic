@@ -43,7 +43,7 @@ def read_recent(conn, cur):
 	increase_list = []
 	decrease_list = []
 	#number of standard deviations
-	range = 2.0  
+	range = 2.0 
 
 	#generate sub-lists on either side of mean
 	for i, val in enumerate(result_list):
@@ -72,7 +72,7 @@ def write_offset(conn, cur, offset):
 	query = "select value from config where key = 'hose_offset';"
 	cur.execute(query)
 	result = cur.fetchone()
-	adjust = float(result[0]) - offset
+	adjust = float(result[0]) + offset 
 	print("Adjusting offset from {:1.2f} to {:1.2f}".format(float(result[0]), adjust))
 
 	#query = "update config set value='{}' where key='hose_offset';", offset)
