@@ -24,22 +24,26 @@ def read_recent(conn, cur):
 	cur.execute(query);
 
 	#grab last 10 minutes of samples
-	query = "select pressure from stability where time >= (now() - INTERVAL '10 minute')::timestamp(0);"
+	query = "select pressure from stability where time >= (now() - INTERVAL '10 minute')::timestamp(0) order by time;"
 	cur.execute(query)
 	result = cur.fetchall()
 	result_list = list(map(operator.itemgetter(0), result))
-	#print(result_list)
+	
+
+	#if writer app dies, SQL query is empty - just bail out
+	if len(result_list) == 0:
+		return(0)
 
 	#basic stats on list
 	mean = statistics.mean(result_list)
 	stdev = statistics.pstdev(result_list)
-	print("Pressure Mean:{:1.3f} PSI".format(mean))
+	print("Pressure Mean: {:1.3f} PSI".format(mean))
 
 	#lists for above, below threshold
 	increase_list = []
 	decrease_list = []
 	#number of standard deviations
-	range = 2  
+	range = 2.0  
 
 	#generate sub-lists on either side of mean
 	for i, val in enumerate(result_list):
@@ -54,10 +58,10 @@ def read_recent(conn, cur):
 	psi_change = 0
 	if len(increase_list) > len(decrease_list):
 		psi_change = statistics.mean(increase_list) - mean 
-		print("looks like hose moved down by {} psi".format(psi_change))
+		print("looks like hose moved down by {:1.3f} psi".format(psi_change))
 	elif len(decrease_list) > len(increase_list):
 		psi_change = mean - statistics.mean(decrease_list)
-		print("looks like hose moved up by {} psi".format(psi_change))
+		print("looks like hose moved up by {:1.3f} psi".format(psi_change))
 	else:
 		print("no obvious change")
 	return(psi_change)
@@ -68,7 +72,8 @@ def write_offset(conn, cur, offset):
 	query = "select value from config where key = 'hose_offset';"
 	cur.execute(query)
 	result = cur.fetchone()
-	print("Adjusting offset from {} to {}".format(result[0], offset))
+	adjust = float(result[0]) - offset
+	print("Adjusting offset from {:1.2f} to {:1.2f}".format(float(result[0]), adjust))
 
 	#query = "update config set value='{}' where key='hose_offset';", offset)
 	#print(query)

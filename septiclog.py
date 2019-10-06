@@ -86,11 +86,11 @@ def get_pressure_offset():
 	return(offset_psi)
 
 #write update to Hue 
-def update_hue(press, temp):
+def update_hue(press, press_nonadj, temp):
 
 	#static vars
 	input_max = 3.8
-	input_min = 2.5
+	input_min = 2.8
 	hue_color_min = 0
 	hue_color_max = 21845
 	bright_max = 255
@@ -134,7 +134,7 @@ def update_hue(press, temp):
 		print ("HTTP error; retrying")
 	
 	#debugging is fun
-	print("{} - Press(adj):{:1.3f} Temp:{:5.2f} Color:{:5.0f} Brightness:{:2.1f}%".format(dt.strftime("%x %H:%M:%S"), orig_press, temp, hue_color, brightness*100/255))
+	print("{} - Press(adj):{:1.3f} Press(orig):{:1.3f} Temp:{:5.2f} Color:{:5.0f}".format(dt.strftime("%x %H:%M:%S"), orig_press, press_nonadj, temp, hue_color))
 
 
 
@@ -149,17 +149,16 @@ while True:
 	raw_press = raw_press/loops
 
 	#convert to PSI	
-
 	port = raw_press / 68.9476
 
-	#read offset from database
-	port += get_pressure_offset();
+	#get hose offset
+	hose_offset = get_pressure_offset()
 
-	#update hue color and brightness
-	update_hue(port, bmp.temperature)
+	#update hue color and brightness - args are: adjusted_pressure, raw_pressure, temperature
+	update_hue(port + hose_offset, port, bmp.temperature)
 
 	#save to Postgres
-	add_record(port, bmp.temperature, bmp.pressure)
+	add_record(port + hose_offset, bmp.temperature, bmp.pressure)
 
 	#TODO replace with time-based mechanism so that application restarts don't write multiple records per timeslice
 	#takes a couple of seconds to do database writes
