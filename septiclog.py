@@ -119,12 +119,19 @@ def update_hue(press, press_nonadj, temp):
 			#print("Night time")
 
 	#convert current pressure to hue color
+	hue_color = 0
+	#flag unusually low pressure with blue color
+	if press < (input_min - 0.25):
+		hue_color = 46920  
+	#bounds checking for linear mapping
 	if press > input_max:
-		press = input_max
+                press = input_max
 	if press < input_min:
 		press = input_min
 	
-	hue_color = hue_color_max - round((hue_color_max - hue_color_min) * ((press - input_min) / (input_max - input_min)))
+	#linear mapping if color not set due to special conditions
+	if (hue_color == 0):
+		hue_color = hue_color_max - round((hue_color_max - hue_color_min) * ((press - input_min) / (input_max - input_min)))
 
 	#write update
 	hue_payload = {"on":True, "sat":255, "hue": hue_color, "bri": brightness}
