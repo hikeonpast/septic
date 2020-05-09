@@ -118,10 +118,9 @@ def update_hue(press, press_nonadj, temp):
 			brightness = bright_min
 			#print("Night time")
 
-	#convert current pressure to hue color
 	hue_color = 0
 	#flag unusually low pressure with blue color
-	if press < (input_min - 0.25):
+	if press < (input_min * 0.95):
 		hue_color = 46920  
 	#bounds checking for linear mapping
 	if press > input_max:
