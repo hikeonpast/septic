@@ -24,7 +24,7 @@ def read_recent(conn, cur):
 	cur.execute(query);
 
 	#grab last 10 minutes of samples
-	query = "select pressure from stability where time >= (now() - INTERVAL '10 minute')::timestamp(0) order by time;"
+	query = "select pressure from stability where time >= (now() - INTERVAL '15 minute')::timestamp(0) order by time;"
 	cur.execute(query)
 	result = cur.fetchall()
 	result_list = list(map(operator.itemgetter(0), result))
@@ -57,8 +57,8 @@ def read_recent(conn, cur):
 	#attempt to determine size of step change
 	psi_change = 0
 	if len(increase_list) > len(decrease_list):
-		psi_change = statistics.mean(increase_list) - mean 
-		print("looks like hose moved down by {:1.3f} psi".format(psi_change))
+		psi_change = mean - statistics.mean(increase_list) 
+		print("looks like hose moved down by {:1.3f} psi".format(-psi_change))
 	elif len(decrease_list) > len(increase_list):
 		psi_change = mean - statistics.mean(decrease_list)
 		print("looks like hose moved up by {:1.3f} psi".format(psi_change))

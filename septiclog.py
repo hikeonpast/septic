@@ -79,7 +79,7 @@ def get_pressure_offset():
 	cur.execute(query)
 	result = cur.fetchone()
 	offset_inches = float(result[0])
-	if (offset_inches > 0.0) and (offset_inches < 48.0):
+	if (offset_inches > -24.0) and (offset_inches < 48.0):
 		offset_psi = offset_inches * 0.0360912
 	else:
 		offset_psi = 0
@@ -89,12 +89,12 @@ def get_pressure_offset():
 def update_hue(press, press_nonadj, temp):
 
 	#static vars
-	input_max = 3.8
-	input_min = 2.8
+	input_max = 4.3 
+	input_min = 3.0
 	hue_color_min = 0
 	hue_color_max = 21845
 	bright_max = 255
-	bright_min = 75
+	bright_min = 65
 
 	#save for debug printing 
 	orig_press = press
@@ -123,6 +123,7 @@ def update_hue(press, press_nonadj, temp):
 		press = input_max
 	if press < input_min:
 		press = input_min
+	
 	hue_color = hue_color_max - round((hue_color_max - hue_color_min) * ((press - input_min) / (input_max - input_min)))
 
 	#write update
